@@ -1,0 +1,54 @@
+<p align="center">
+	<form name="powerdevices" method="post" action="[% webpath %]">
+    <table class="data" id="MainDataTable">
+		<tr class="tabheader">
+				<th>Hostname</th>
+				<th>Type</th>
+				<th>Description</th>
+				<th>Scan speed</th>
+				<th>Active</th>
+		</tr>
+		[% FOREACH device IN devices %]
+		<tr>
+				<td>[% device.hostname %]<input type="hidden" name="hostname" value="[% device.hostname %]"></td>
+				<td align="center">[% device.device_type %]</td>
+				<td><input type="text" size="40" maxlength="60" name="desc_[% device.hostname %]" value="[% device.description %]"></td>
+				<td>
+						<select name="speed_[% device.hostname %]">
+							<option value="slow"
+								[% IF device.scanspeed == "slow" %]
+									selected="selected"
+								[% END %]
+								>Slow
+							</option>
+							<option value="medium"
+								[% IF device.scanspeed == "medium" %]
+									selected="selected"
+								[% END %]
+								>Medium
+							</option>
+							<option value="fast"
+								[% IF device.scanspeed == "fast" %]
+									selected="selected"
+								[% END %]
+								>Fast
+							</option>
+						</select>
+				</td>
+				<td><input type="checkbox" name="status_[% device.hostname %]"
+				[% IF device.is_active %]
+				checked
+				[% END %]
+				></td>
+		</tr>
+		[% END %]
+		<tr>
+			<td colspan="6" align="center">
+				<input type="submit" value="Save">
+				<input type="submit" value="Reset">
+			</td>
+		</tr>
+    </table>
+	<input type="hidden" name="submitform" value="1">
+    </form>
+</p>

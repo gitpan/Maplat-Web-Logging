@@ -1,0 +1,82 @@
+[% IF statustext %]
+<p align="center">
+    <div class="[% statuscolor %]">[% statustext %]</div>
+</p>
+[% END %]
+
+<style type="text/css">
+	#sortable1, #sortable2 { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; }
+	#sortable1 li, #sortable2 li { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; width: 120px; }
+</style>
+<script type="text/javascript">
+	$(function() {
+		$("#sortable1, #sortable2").sortable({
+			connectWith: '.connectedSortable'
+		}).disableSelection();
+	});
+	
+</script>
+
+<p align="center">
+	<form name="report_selector" method="post" action="[% webpath %]">
+		<table class="data" id="HelperTable1">
+			<tr class="tabheader">
+				<th>Report</th>
+				[% IF ReportID != "" %]
+					<th>Timeframe</th>
+					<th>Device</th>
+				[% END %]
+			</tr>
+			<tr>
+				<td>
+					<select name="reportid" onChange="document.report_selector.submit();">
+					<option value=""></option>
+					[% FOREACH Report IN AvailReports %]
+						<option value="[% Report.reportid %]"
+						[% IF Report.reportid == ReportID %]
+							selected
+						[% END %]
+						>[% Report.device_type %] : [% Report.report_name %]</option>
+					[% END %]
+					</select>
+				</td>
+				[% IF ReportID != "" %]
+					<td>
+						<select name="timeframe" onChange="document.report_selector.submit();">
+						[% FOREACH Timeframe IN Timeframes %]
+							<option value="[% Timeframe %]"
+							[% IF Timeframe == SelectedTimeframe %]
+								selected
+							[% END %]
+							>[% Timeframe %]</option>
+						[% END %]
+						</select>
+					</td>
+					<td>
+						<select name="device" onChange="document.report_selector.submit();">
+						[% FOREACH Device IN Devices %]
+							<option value="[% Device.hostname %]"
+							[% IF Device.hostname == SelectedDevice %]
+								selected
+							[% END %]
+							>[% Device.hostname %] : [% Device.description %]</option>
+						[% END %]
+						</select>						
+					</td>
+				[% END %]
+			</tr>
+		</table>
+	</form>
+</p>
+
+[% IF ReportID != "" %]
+	[% FOREACH Graph IN Graphs %]
+		<p align="center">
+			<h1>[% Graph.title %]</h1>
+			<img src="[% graphpath %]/[% Graph.graph_name %]/[% Graph.rndsuffix %]">
+		</p>
+		<hr width="400px" align="center">
+	[% END %]
+[% END %]
+
+</form>

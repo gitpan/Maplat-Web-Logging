@@ -1,0 +1,46 @@
+<p align="center">
+    <table class="data" id="MainDataTable">
+		<tr class="tabheader">
+			<th>Device</th>
+			<th>Name</th>
+			<th>Title</th>
+			<th>Description</th>
+			<th></th>
+		</tr>
+
+		[% FOREACH Report IN Reports %]
+			<form name="selectreport_[% Report.report_name %]__[% Report.device_type %]" method="post" action="[% webpath %]">
+				<tr>
+					<td>[% Report.device_type %]</td>
+					<td>[% Report.report_name %]</td>
+					<td>[% Report.report_title %]</td>
+					<td>[% Report.description %]</td>
+					<td>
+						<input type="hidden" name="reportid" value="[% Report.report_name %]_#_[% Report.device_type %]">
+						<input type="hidden" name="mode" value="selectreport">
+						<input type="submit" value="Select">
+					</td>
+				</tr>
+			</form>
+		[% END %]
+		<form name="selectreport_NEW" method="post" action="[% webpath %]">
+			<tr>
+				<td>
+					<select name="device_type">
+						<option value="USV">USV</option>
+						<option value="PAC3200">PAC3200</option>
+					</select>
+				</td>
+				<td><input type="text" name="report_name" value="" size="15" maxlength="60"></td>
+				<td><input type="text" name="report_title" value="" size="30" maxlength="60"></td>
+				<td><input type="text" name="report_description" value="" size="30" maxlength="60"></td>
+				<td>
+					<input type="hidden" name="mode" value="createreport">
+					<input type="submit" value="Create">
+				</td>
+			</tr>
+		</form>
+    </table>
+	
+    
+</p>

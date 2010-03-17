@@ -1,0 +1,23 @@
+severity = 4
+verbose = 4
+
+[TestingAndDebugging::ProhibitNoStrict]
+allow = refs
+
+[TestingAndDebugging::ProhibitProlongedStrictureOverride]
+statements = 5
+
+
+[Perl::Critic::Policy::BuiltinFunctions::ProhibitStringyEval]
+severity = 2
+
+[Objects::ProhibitIndirectSyntax]
+severity = 4
+forbid = create destroy
+
+[-RegularExpressions::RequireExtendedFormatting]
+
+[Subroutines::ProhibitExcessComplexity]
+max_mccabe = 65
+
+[-Perl::Critic::Policy::Miscellanea::ProhibitUnrestrictedNoCritic]

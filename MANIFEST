@@ -1,0 +1,31 @@
+Changes
+devscripts/setversion.pl
+devscripts/updateClasses.pl
+lib/Maplat/Helpers/Logging/Graphs.pm
+lib/Maplat/Web/Logging.pm
+lib/Maplat/Web/Logging/Devices.pm
+lib/Maplat/Web/Logging/Graphs.pm
+lib/Maplat/Web/Logging/Report.pm
+lib/Maplat/Web/Logging/Templates/devices_admin.tt
+lib/Maplat/Web/Logging/Templates/devices_user.tt
+lib/Maplat/Web/Logging/Templates/graphs_admin.tt
+lib/Maplat/Web/Logging/Templates/graphs_user.tt
+lib/Maplat/Web/Logging/Templates/reportedit.tt
+lib/Maplat/Web/Logging/Templates/reportselect.tt
+lib/Maplat/Web/Logging/Templates/reportview.tt
+lib/Maplat/Worker/Logging.pm
+lib/Maplat/Worker/Logging/Graphs.pm
+lib/Maplat/Worker/Logging/PAC3200.pm
+lib/Maplat/Worker/Logging/USV.pm
+Makefile.PL
+makeppd.bat
+MANIFEST			This list of files
+MANIFEST.SKIP
+README
+t/01-workercompile.t
+t/02-webguicompile.t
+t/03-pod.t
+t/04-podcoverage.t
+t/30-perlcritic.t
+t/perlcriticrc
+META.yml                                 Module meta-data (added by MakeMaker)
