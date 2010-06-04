@@ -12,6 +12,7 @@ WriteMakefile(
             "Net::Ping" => 0,
             "PDF::Report" => 0,
             "WWW::Mechanize" => 0,
+            "Readonly" => 0,
 	    "HTML::TableExtract"	=> 0,
     }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005

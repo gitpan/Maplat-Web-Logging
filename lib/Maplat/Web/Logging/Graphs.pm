@@ -10,7 +10,7 @@ use base qw(Maplat::Web::BaseModule);
 use Maplat::Helpers::DateStrings;
 use Carp;
 
-our $VERSION = 0.99;
+our $VERSION = 0.991;
 
 sub new {
     my ($proto, %config) = @_;
@@ -41,7 +41,6 @@ sub get_admin {
     my ($self, $cgi) = @_;
 
     my $dbh = $self->{server}->{modules}->{$self->{db}};
-    my $memh = $self->{server}->{modules}->{$self->{memcache}};
 
     my %webdata = 
     (
@@ -167,7 +166,6 @@ sub get_user {
     my ($self, $cgi) = @_;
 
     my $dbh = $self->{server}->{modules}->{$self->{db}};
-    my $memh = $self->{server}->{modules}->{$self->{memcache}};
 
     my %webdata = 
     (
@@ -291,7 +289,6 @@ Then configure() the module as you would normally.
                     <pagetitle>Graphs ADM</pagetitle>
             </admin>
             <db>maindb</db>
-            <memcache>memcache</memcache>
             <minurls>4</minurls>
         </options>
     </module>

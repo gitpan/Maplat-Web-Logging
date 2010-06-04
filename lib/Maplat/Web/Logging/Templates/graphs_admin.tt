@@ -59,6 +59,7 @@
 						<select name="devicetype___NEW__">
 							<option value="PAC3200">PAC3200</option>
 							<option value="USV">USV</option>
+							<option value="RBS">RBS</option>
 						</select>
 				</td>
 				<td><input type="text" size="20" maxlength="60" name="title___NEW__" value=""></td>

@@ -11,7 +11,7 @@ use WWW::Mechanize;
 use HTML::TableExtract;
 use Carp;
 
-our $VERSION = 0.99;
+our $VERSION = 0.991;
 
 sub new {
     my ($proto, %config) = @_;
@@ -42,6 +42,8 @@ sub work {
     my $dbh = $self->{server}->{modules}->{$self->{db}};
     my $reph = $self->{server}->{modules}->{$self->{reporting}};
     my $memh = $self->{server}->{modules}->{$self->{memcache}};
+	# Refresh Lifetick every now and then
+	$memh->refresh_lifetick;
     
     my @todo;
     my $selstmt = "SELECT * FROM logging_devices
@@ -59,6 +61,9 @@ sub work {
     
     foreach my $device (@todo) {
         $reph->debuglog("Logging USV for " . $device->{hostname} . " at " . $device->{ip_addr});
+		# Refresh Lifetick every now and then
+		$memh->refresh_lifetick;
+		
         my $mech = WWW::Mechanize->new();
         $mech->credentials($device->{username}, $device->{password});
         
@@ -87,8 +92,8 @@ sub work {
             $dbh->commit;
         } else {
             $reph->debuglog("Access failed to " . $device->{hostname} . "!");
-            my $errorstmt = "INSERT INTO logging_log_usv (hostname, device_ok)
-                            VALUES (" . $dbh->quote($device->{hostname}) . ", 'f')";
+            my $errorstmt = "INSERT INTO logging_log_usv (hostname, device_type, device_ok)
+                            VALUES (" . $dbh->quote($device->{hostname}) . ", 'USV', 'f')";
             my $errorsth = $dbh->prepare($errorstmt) or croak($dbh->errstr);
             $errorsth->execute or croak($dbh->errstr);
             $errorsth->finish;

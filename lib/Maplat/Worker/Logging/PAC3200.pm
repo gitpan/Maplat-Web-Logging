@@ -14,7 +14,7 @@ use IO::Socket;
 use Carp;
 use Readonly;
 
-our $VERSION = 0.99;
+our $VERSION = 0.991;
 
 Readonly my $MAX_RECV_LEN => 65536;
 
@@ -86,6 +86,9 @@ sub work {
     my $dbh = $self->{server}->{modules}->{$self->{db}};
     my $reph = $self->{server}->{modules}->{$self->{reporting}};
     my $memh = $self->{server}->{modules}->{$self->{memcache}};
+	# Refresh Lifetick every now and then
+	$memh->refresh_lifetick;
+
     
     my @todo;
     my $selstmt = "SELECT * FROM logging_devices
@@ -109,6 +112,8 @@ sub work {
     
     foreach my $device (@todo) {
         $reph->debuglog("Logging PAC3200 for " . $device->{hostname} . " at " . $device->{ip_addr});
+		# Refresh Lifetick every now and then
+		$memh->refresh_lifetick;
 
         my @floats;
         if($self->getData($device->{ip_addr}, 502, \@floats, @offsets)) {
@@ -156,8 +161,8 @@ sub work {
             $dbh->commit;
         } else {
             $reph->debuglog("Access failed to " . $device->{hostname} . "!");
-            my $errorstmt = "INSERT INTO logging_log_pac3200 (hostname, device_ok)
-                            VALUES (" . $dbh->quote($device->{hostname}) . ", 'f')";
+            my $errorstmt = "INSERT INTO logging_log_pac3200 (hostname, device_type, device_ok)
+                            VALUES (" . $dbh->quote($device->{hostname}) . ", 'PAC3200', 'f')";
             my $errorsth = $dbh->prepare($errorstmt) or croak($dbh->errstr);
             $errorsth->execute or croak($dbh->errstr);
             $errorsth->finish;

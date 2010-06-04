@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Maplat-Web-Logging
-version:            0.99
+version:            0.991
 abstract:           ~
 author:
     - Rene Schickbauer <rene.schickbauer@gmail.com>
@@ -17,12 +17,13 @@ requires:
     Maplat:              0.99
     Net::Ping:           0
     PDF::Report:         0
+    Readonly:            0
     WWW::Mechanize:      0
 no_index:
     directory:
         - t
         - inc
-generated_by:       ExtUtils::MakeMaker version 6.54
+generated_by:       ExtUtils::MakeMaker version 6.55_02
 meta-spec:
     url:      http://module-build.sourceforge.net/META-spec-v1.4.html
     version:  1.4

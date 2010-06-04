@@ -53,7 +53,12 @@
 						[% IF device_type == "PAC3200" %]
 							selected
 						[% END %]
-						>PAC3200</option>						
+						>PAC3200</option>
+						<option value="RBS"
+						[% IF device_type == "RBS" %]
+							selected
+						[% END %]
+						>RBS</option>
 					</select>
 				</td>
 			</tr>

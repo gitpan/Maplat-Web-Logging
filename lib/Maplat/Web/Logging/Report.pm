@@ -11,10 +11,11 @@ use base qw(Maplat::Web::BaseModule);
 use Maplat::Helpers::DateStrings;
 use Maplat::Helpers::Padding qw(doFPad);
 use Maplat::Helpers::DBSerialize;
+use Maplat::Helpers::Logging::Graphs;
 use PDF::Report;
 use Carp;
 
-our $VERSION = 0.99;
+our $VERSION = 0.991;
 
 sub new {
     my ($proto, %config) = @_;
@@ -58,7 +59,6 @@ sub get_view {
     my ($self, $cgi) = @_;
 
     my $dbh = $self->{server}->{modules}->{$self->{db}};
-    my $memh = $self->{server}->{modules}->{$self->{memcache}};
     my $sesh = $self->{server}->{modules}->{$self->{session}};
     
     # Cached id
@@ -183,7 +183,6 @@ sub get_edit {
     my ($self, $cgi) = @_;
 
     my $dbh = $self->{server}->{modules}->{$self->{db}};
-    my $memh = $self->{server}->{modules}->{$self->{memcache}};
     my $sesh = $self->{server}->{modules}->{$self->{session}};
     
     my $selectedreport = $sesh->get("SelectedReport");
@@ -421,7 +420,6 @@ sub get_select {
     my ($self, $cgi) = @_;
 
     my $dbh = $self->{server}->{modules}->{$self->{db}};
-    my $memh = $self->{server}->{modules}->{$self->{memcache}};
     my $sesh = $self->{server}->{modules}->{$self->{session}};
     
     my $sth = $dbh->prepare_cached("SELECT *
@@ -435,6 +433,8 @@ sub get_select {
             push @reports, $line;
         }
     }
+	$sth->finish;
+	$dbh->rollback;
     
     my %webdata = 
     (
@@ -455,13 +455,14 @@ sub get_select {
 sub get_graph {
     my ($self, $cgi) = @_;
 
-    my $dbh = $self->{server}->{modules}->{$self->{db}};
-    my $memh = $self->{server}->{modules}->{$self->{memcache}};
+	my $dbh = $self->{server}->{modules}->{$self->{db}};
     my $sesh = $self->{server}->{modules}->{$self->{session}};
     
     # Cached id
     my $timeframe = $sesh->get("SelectedTimeframe") || "";
     my $device = $sesh->get("SelectedDevice") || "";
+	my $reportid = $sesh->get("SelectedReport") || "";
+	my ($reportname, $devicetype) = split/\_\#\_/, $reportid;
     
     my $graphname = $cgi->path_info();
     my $remove = '^' . $self->{reportgraph}->{webpath} . "/";
@@ -474,28 +475,17 @@ sub get_graph {
         return (status  =>  404);
     }
     
-    my $sth = $dbh->prepare_cached("SELECT graph_data
-                                   FROM logging_reportimages
-                                   WHERE graph_name = ?
-                                   AND hostname = ?
-                                   AND graph_timeframe = ?")
-            or croak($dbh->errstr);
-    my $img;
-    if(!$sth->execute($graphname, $device, $timeframe)) {
-        $dbh->rollback;
-        return (status  =>  404);
-    }
-    while((my $data = $sth->fetchrow_array)) {
-        $img = dbthaw($data);
-        last;
-    }
-    $sth->finish;
+	my $img = Maplat::Helpers::Logging::Graphs::simpleGraph(
+		$dbh, $devicetype, $graphname, $device, $timeframe
+	);
+	$dbh->rollback;
+	
     if(!defined($img)) {
         return (status  =>  404);
     } else {
         return (status          =>  200,
                 type            => "image/png",
-                data            => $$img,
+                data            => $img,
                 expires         => "+60s",
                 cache_control   =>  "max-age=120, must-revalidate",
                 );
@@ -539,7 +529,6 @@ Then configure() the module as you would normally.
                 <pagetitle>Report Graph</pagetitle>
             </reportgraph>
             <db>maindb</db>
-            <memcache>memcache</memcache>
             <session>sessionsettings</session>
         </options>
     </module>

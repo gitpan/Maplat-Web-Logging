@@ -14,7 +14,6 @@ lib/Maplat/Web/Logging/Templates/reportedit.tt
 lib/Maplat/Web/Logging/Templates/reportselect.tt
 lib/Maplat/Web/Logging/Templates/reportview.tt
 lib/Maplat/Worker/Logging.pm
-lib/Maplat/Worker/Logging/Graphs.pm
 lib/Maplat/Worker/Logging/PAC3200.pm
 lib/Maplat/Worker/Logging/USV.pm
 Makefile.PL

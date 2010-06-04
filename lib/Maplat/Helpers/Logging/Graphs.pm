@@ -17,10 +17,46 @@ use GD::Graph::linespoints;
 use Maplat::Helpers::DateStrings;
 use Carp;
 
-our $VERSION = 0.99;
+our $VERSION = 0.991;
 
 our ($graphWidth, $graphHeight, $graphHBarHeight) = (900, 400, 650);
 our ($smallgraphWidth, $smallgraphHeight) = (200, 100);
+our $slidingWindowSize = 4;
+
+my %plugins;
+
+sub registerPlugin {
+	my ($devicetype, $funcref) = @_;
+	
+	$plugins{$devicetype} = $funcref;
+	return;
+}
+
+sub simpleGraph {
+	my ($dbh, $devicetype, $graphname, $hostname, $ctime, $starttime) = @_;
+	
+	if(defined($plugins{$devicetype})) {
+		return $plugins{$devicetype}->($dbh, $devicetype, $graphname, $hostname, $ctime, $starttime);
+	}
+	
+	my $selstmt = "SELECT * FROM logging_reportgraphs
+					WHERE device_type = ?
+					AND graph_name = ?";
+	my $selsth = $dbh->prepare_cached($selstmt)
+			or croak($dbh->errstr);
+	$selsth->execute($devicetype, $graphname) or croak($dbh->errstr);
+	my $graph = $selsth->fetchrow_hashref;
+	$selsth->finish;
+	
+	
+	if(!defined($graph)) {
+		return;
+	}
+	
+	my $table = 'logging_log_' . lc($devicetype);
+	
+	return genGraph($dbh, $graph, $table, $hostname, $ctime, $starttime);
+}
 
 sub genGraph {
     my ($dbh, $graph, $table, $host, $ctime, $starttime) = @_;
@@ -29,11 +65,13 @@ sub genGraph {
     # now() is presumed and starttime is now() - $timeframe
     # starttime is an ISO timestring, as accepted my PostgreSQL.
 
-    if(!defined($starttime)) {
-        $starttime = '';
+	my ($timeframe, $precision, $numElements) = parseCTime($ctime);
+	
+    my $fastQuery = 0;
+    if(!defined($starttime) || $starttime eq '') {
+        $starttime = offsetISODate(getISODate(), 0 - $timeframe);
     }
-    
-    my ($timeframe, $precision, $numElements) = parseCTime($ctime);
+	my $endtime = offsetISODate($starttime, $timeframe);
     
     # Prepare various dynamic data storages
     my @cols;
@@ -59,44 +97,29 @@ sub genGraph {
     # extra math to get the right data. This is also usually a one-of calculation for each specific starttime, so
     # we do *not* cache the statement to save some precious server resources in the long run
 
-    if($starttime eq '') {
-        $stmt = "SELECT to_timestamp(date_part('epoch', logtime)::integer / $precision * $precision) AS displaydate,
-            " . join(',', @cols) . "
-            FROM $table
-            WHERE hostname = ?
-            and (EXTRACT(EPOCH FROM current_timestamp - logtime))::integer < $timeframe
-            group by  to_timestamp(date_part('epoch', logtime)::integer / $precision * $precision)
-            order by to_timestamp(date_part('epoch', logtime)::integer / $precision * $precision)";
-        
-        $sth = $dbh->prepare_cached($stmt) or croak($dbh->errstr);
-    } else {
-        $stmt = "SELECT to_timestamp(date_part('epoch', logtime)::integer / $precision * $precision) AS displaydate,
-            " . join(',', @cols) . "
-            FROM $table
-            WHERE hostname = ?
-            AND (EXTRACT(EPOCH FROM logtime - '$starttime'::timestamp))::integer >= 0
-            AND (EXTRACT(EPOCH FROM logtime - '$starttime'::timestamp))::integer < $timeframe
-            group by  to_timestamp(date_part('epoch', logtime)::integer / $precision * $precision)
-            order by to_timestamp(date_part('epoch', logtime)::integer / $precision * $precision)";
-        
-        $sth = $dbh->prepare_cached($stmt) or croak($dbh->errstr);
-    }
+	$stmt = "SELECT displaydate_" . $ctime . " AS displaydate,
+		" . join(',', @cols) . "
+		FROM $table
+		WHERE hostname = ?
+		AND logtime >= ?
+		AND logtime < ?
+		group by  displaydate_" . $ctime . "
+		order by displaydate_" . $ctime;
+	
+	$sth = $dbh->prepare_cached($stmt) or croak($dbh->errstr);
+
     #print "** $stmt **\n";
-    $sth->execute($host) or croak($dbh->errstr);
+    $sth->execute($host, $starttime, $endtime) or croak($dbh->errstr);
     my %datarows;
     my $coredate = '';
     while((my $row = $sth->fetchrow_hashref)) {
-        $datarows{$row->{displaydate}} = $row;
-        #if($starttime ne '') {
-        #    # Core date is the last date, we'll add missing datasets to the back
-        #    $coredate = $row->{displaydate};
-        #} elsif($coredate eq '') {
-        #    # Core date is the first date, we'll add missing datasets to the front 
-        #    $coredate = $row->{displaydate};
-        #}
+		my $nicedate = $row->{displaydate};
+		$nicedate =~ s/\+\d\d$//o;
+		$row->{displaydate} = $nicedate;
+        $datarows{$nicedate} = $row;
         # Make core date always the last date and add to the back (incl. filling in missing pieces)
         if($coredate eq '') {
-            $coredate = $row->{displaydate};
+            $coredate = $nicedate;
         }
        } 
     $sth->finish;
@@ -120,38 +143,51 @@ sub calcGraph {
 
     my $datestmt;
     my $datecount = 1;
-    # Currently: always add to the back
-    #if($starttime ne '') {
-        $datestmt = "SELECT to_timestamp(date_part('epoch', ?::timestamp)::integer + $precision) AS displaydate";
-    #} else {
-    #    $datestmt = "SELECT to_timestamp(date_part('epoch', ?::timestamp)::integer - $precision) AS displaydate";
-    #}
-    my $datesth = $dbh->prepare($datestmt) or croak($dbh->errstr);
     if($coredate eq '') {
         $coredate = getISODate();
     }
-    my @alldates = ($coredate);
-    while($datecount < $numElements) {
-        #print "   ...  $coredate ...\n";
-        $datesth->execute($coredate) or croak($dbh->errstr);
-        my $daterow = $datesth->fetchrow_hashref;
-        $coredate = $daterow->{displaydate};
-        # Currently always add to the back
-        #if($starttime ne '') {
-            push @alldates, $coredate;
-        #} else {
-        #    unshift @alldates, $coredate;
-        #}
-        $datesth->finish;
-        $datecount++;
-    }
+	
+	my @alldates = ($coredate);
+	while($datecount < $numElements) {
+		$coredate = offsetISODate($coredate, $precision);
+		push @alldates, $coredate;
+		$datecount++;
+	}
+	
+	my $calcslider = 0;
+	if($graph->{graph_type} =~ /lines/ && $graph->{cummulate}) {
+		# Special case: If the graph type is lines or linespoints and cummulate is set
+		# (which is normally not possible), we assume that there are only two data
+		# sets: The "real" value and a sliding average we calculate in THIS function.
+		# We assume that both sets are defined in graph, as "data" and "slider". The
+		# slider does not need to hold values, we calculate them here.
+
+		$graph->{cummulate} = 0;
+		$calcslider = 1;
+	}
 
     my ($ymin, $ymax);
+	my @slider;
     foreach my $rowdate (@alldates) {
         my $nicedate = $rowdate;
         $nicedate =~ s/\+\d\d$//o;
+				
         if(defined($datarows->{$rowdate})) {
             my $row = $datarows->{$rowdate};
+
+			if($calcslider) {
+				push @slider, $row->{sum_data};
+				if((scalar @slider) > $slidingWindowSize) {
+					shift @slider;
+				}
+				my $avg = 0;
+				foreach my $slid (@slider) {
+					$avg += $slid;
+				}
+				$avg = $avg / (scalar @slider);
+				$row->{sum_slider} = $avg;			
+			}
+			
             my $sum = 0;
             foreach my $pgcol (@pgcols) {
                 if($pgcol eq 'displaydate') {
@@ -190,13 +226,36 @@ sub calcGraph {
             }
         } else {
             # Push a dummy row, don't change min/max stuff
-            foreach my $pgcol (@pgcols) {
-                if($pgcol eq "displaydate") {
-                    push @{$stor{$pgcol}}, $nicedate;
-                } else {
-                    push @{$stor{$pgcol}}, undef;
-                }
-            }
+			
+			# The expeption here is if we calculate a sliding average
+			# and usezero is set. In this case, we need to consider unavailable
+			# data within our average.
+			if($calcslider) {
+				push @{$stor{displaydate}}, $nicedate;
+				push @{$stor{sum_data}}, 0;
+				push @slider, 0;
+				if((scalar @slider) > $slidingWindowSize) {
+					shift @slider;
+				}
+				my $avg = 0;
+				foreach my $slid (@slider) {
+					$avg += $slid;
+				}
+				$avg = $avg / (scalar @slider);
+				push @{$stor{sum_slider}}, $avg;			
+			} else {
+				foreach my $pgcol (@pgcols) {
+					if($pgcol eq "displaydate") {
+						push @{$stor{$pgcol}}, $nicedate;
+					} else {
+						if(defined($graph->{usezero}) && $graph->{usezero}) {
+							push @{$stor{$pgcol}}, 0;
+						} else {
+							push @{$stor{$pgcol}}, undef;
+						}
+					}
+				}
+			}
         }
     }
     
@@ -277,6 +336,18 @@ sub calcGraph {
             'x_labels_vertical'=> 1, 
         );        
     }
+	
+	if($classname eq "lines") {
+		if($calcslider) {
+			$paint->set(
+				'line_width'=> 5, 
+			);
+		} else {
+			$paint->set(
+				'line_width'=> 2, 
+			);
+		}
+	}
     
     $paint->plot(\@graphdata);
     
@@ -293,7 +364,7 @@ sub defaultImage {
     $paint->moveTo(0,0);
     $paint->line($smallgraphWidth-1, $smallgraphHeight-1);
     $paint->moveTo(0,$smallgraphHeight-1);
-    $paint->line($smallgraphWidth-1, 0);
+    $paint->line($smallgraphWidth-1, 1-$smallgraphHeight);
     
     $paint->fgcolor('black');
     $paint->moveTo(40,40);
@@ -358,6 +429,15 @@ call this module.
 
 It's planned that the Version 1.0 release will feature a (slightly) better interface that lets you add graph
 generation for other stuff too while still using the same webinterface (e.g. a plugin or hook-infrastructure).
+
+=head2 registerPlugin
+
+Internal function, register a rendering plugin, interface is likely to change
+
+=head2 simpleGraph
+
+Internal function, generate a graph with simplified call arguments, also supports registered plugins,
+interface is likely to change
 
 =head2 calcGraph
 
