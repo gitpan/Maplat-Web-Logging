@@ -1,5 +1,8 @@
 Revision history for Perl extension Maplat.
 
+0.992 Fri Jun 04 13:40:00 2010
+	- Updated to match maplat framework version
+
 0.991 Fri Jun 04 09:30:00 2010
 	- Completly reworked graph generation
 	- added many bugfixes from DarkPAN production system

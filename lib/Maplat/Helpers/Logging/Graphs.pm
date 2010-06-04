@@ -17,7 +17,7 @@ use GD::Graph::linespoints;
 use Maplat::Helpers::DateStrings;
 use Carp;
 
-our $VERSION = 0.991;
+our $VERSION = 0.992;
 
 our ($graphWidth, $graphHeight, $graphHBarHeight) = (900, 400, 650);
 our ($smallgraphWidth, $smallgraphHeight) = (200, 100);

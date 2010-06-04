@@ -15,7 +15,7 @@ use Maplat::Helpers::Logging::Graphs;
 use PDF::Report;
 use Carp;
 
-our $VERSION = 0.991;
+our $VERSION = 0.992;
 
 sub new {
     my ($proto, %config) = @_;

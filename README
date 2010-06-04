@@ -1,4 +1,4 @@
-Maplat version 0.90
+Maplat version 0.992
 ===================
 
 Maplat is an integrated webframework with background workers. It
@@ -6,6 +6,12 @@ does not need an external webserver.
 
 Maplat is designed to be used in a relativly save intranet environment,
 where speed and easy of development take priority over absulote security.
+
+This module is a "plugin" and provides logging functionality as well as
+graphical plotting for logged data.
+
+This is an unstable and unfinished release - for production use, please wait till version
+1.0.
 
 INSTALLATION
 
