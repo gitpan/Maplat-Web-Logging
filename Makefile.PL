@@ -6,7 +6,7 @@ WriteMakefile(
     NAME              => 'Maplat::Web::Logging',
     VERSION_FROM      => 'lib/Maplat/Web/Logging.pm', # finds $VERSION
     PREREQ_PM         => {
-	    Maplat	=> 0.992,
+	    Maplat	=> 0.993,
 	    GD		=> 0,
 	    "GD::Graph"	=> 0,
             "Net::Ping" => 0,

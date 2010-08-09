@@ -1,5 +1,9 @@
 Revision history for Perl extension Maplat.
 
+0.993 Mon Aug 09 07:30:00 2010
+	- Bumped version to match framework release 0.993
+    - all perl module files set filtetype to unix
+
 0.992 Fri Jun 04 13:40:00 2010
 	- Updated to match maplat framework version
 

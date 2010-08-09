@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Maplat-Web-Logging
-version:            0.992
+version:            0.993
 abstract:           ~
 author:
     - Rene Schickbauer <rene.schickbauer@gmail.com>
@@ -14,7 +14,7 @@ requires:
     GD:                  0
     GD::Graph:           0
     HTML::TableExtract:  0
-    Maplat:              0.992
+    Maplat:              0.993
     Net::Ping:           0
     PDF::Report:         0
     Readonly:            0

@@ -5,12 +5,11 @@ package Maplat::Web::Logging;
 use strict;
 use warnings;
 
-
 # ------------------------------------------
 # MAPLAT - Magna ProdLan Administration Tool
 # ------------------------------------------
 
-our $VERSION = 0.992;
+our $VERSION = 0.993;
 
 #=!=START-AUTO-INCLUDES
 use Maplat::Web::Logging::Devices;

@@ -7,13 +7,12 @@ use warnings;
 
 use English;
 
-our $VERSION = 0.992;
+our $VERSION = 0.993;
 
 #=!=START-AUTO-INCLUDES
 use Maplat::Worker::Logging::PAC3200;
 use Maplat::Worker::Logging::USV;
 #=!=END-AUTO-INCLUDES
-
 
 1;
 __END__

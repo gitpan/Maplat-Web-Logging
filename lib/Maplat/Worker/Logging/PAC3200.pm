@@ -14,7 +14,7 @@ use IO::Socket;
 use Carp;
 use Readonly;
 
-our $VERSION = 0.992;
+our $VERSION = 0.993;
 
 Readonly my $MAX_RECV_LEN => 65536;
 
