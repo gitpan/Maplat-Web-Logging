@@ -14,7 +14,7 @@ use IO::Socket;
 use Carp;
 use Readonly;
 
-our $VERSION = 0.993;
+our $VERSION = 0.994;
 
 Readonly my $MAX_RECV_LEN => 65536;
 
@@ -255,14 +255,17 @@ sub makeCMD {
     }
     
     my $tmp = sprintf("%04x", $offset);
-    $tmp =~ /(..)(..)/;
-    my ($high, $low) = ($1, $2);
-    $parts[8] = $high;
-    $parts[9] = $low;
+    if($tmp =~ /(..)(..)/) {
+		my ($high, $low) = ($1, $2);
+		$parts[8] = $high;
+		$parts[9] = $low;
+	} else {
+		croak("Couldn't calculate offset");
+	}
     
     foreach my $part (@parts) {
         #print "$part = ";
-        my ($high, $low) = split//,$part;
+		#my ($high, $low) = split//,$part;
         my $val = hex $part;
         #print "$val\n";
         push @cmd, chr($val);

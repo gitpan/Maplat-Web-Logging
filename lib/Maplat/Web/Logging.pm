@@ -9,7 +9,7 @@ use warnings;
 # MAPLAT - Magna ProdLan Administration Tool
 # ------------------------------------------
 
-our $VERSION = 0.993;
+our $VERSION = 0.994;
 
 #=!=START-AUTO-INCLUDES
 use Maplat::Web::Logging::Devices;

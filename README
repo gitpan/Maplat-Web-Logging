@@ -1,5 +1,5 @@
-Maplat version 0.992
-===================
+Maplat version 0.994
+====================
 
 Maplat is an integrated webframework with background workers. It
 does not need an external webserver.
@@ -9,63 +9,6 @@ where speed and easy of development take priority over absulote security.
 
 This module is a "plugin" and provides logging functionality as well as
 graphical plotting for logged data.
-
-This is an unstable and unfinished release - for production use, please wait till version
-1.0.
-
-INSTALLATION
-
-To install this module type the following:
-
-   perl Makefile.PL
-   make
-   make test
-   make install
-
-DEPENDENCIES
-
-This module requires these other modules and libraries:
-
-CGI
-Date::Manip
-Date::Simple
-DBI
-DBD::Pg
-Digest::MD5
-Digest::SHA1
-English
-FileHandle
-File::Spec
-File::stat
-File::Temp
-Getopt::Long
-HTML::FormatText
-HTML::Parse
-IO::Handle
-IO::Socket::SSL
-Mail::Sendmail
-MIME::Base64
-MIME::QuotedPrint
-Net::Server::PreFork
-PDF::Report
-Socket
-Storable
-String::CRC32
-Sys::Hostname
-Template
-Test::More
-Time::HiRes
-XML::Simple
-
-You should also install one or both of these, depending whats available for your operating system:
-Cache::Memcached
-Cache::Memcached::Fast
-
-These perl modules are optional, depending on how you configure:
-Net::Server::PreFork
-
-Last, but not least, you need a working PostgreSQL server (>= 8.4 recommended) and a running memcached daemon
-(see http://www.danga.com/memcached).
 
 COPYRIGHT AND LICENCE
 

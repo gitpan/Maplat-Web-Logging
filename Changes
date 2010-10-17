@@ -1,5 +1,17 @@
 Revision history for Perl extension Maplat.
 
+0.994 Sun Oct 17 20:45:00 2010
+    - Pass Perl::Critic level 3
+    - Removed unused variable (Perl::Critic)
+    - Ignore "too many arguments" in calcGraph for Perl::Critic (it's an internal helper function)
+    - Fixed Cascading if-elsif chain (Perl::Critic)
+    - Removed hard tabs (Perl::Critic)
+    - Updated Perl::Critic policy configuration from base framework
+    - Set lineendings to unix
+    - Updated required version of framework in Makefile.PL
+    - updated Version bump to match basic framework
+    - Updated Changes
+
 0.993 Mon Aug 09 07:30:00 2010
 	- Bumped version to match framework release 0.993
     - all perl module files set filtetype to unix

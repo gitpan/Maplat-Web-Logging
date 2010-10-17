@@ -7,7 +7,7 @@ use warnings;
 
 use English;
 
-our $VERSION = 0.993;
+our $VERSION = 0.994;
 
 #=!=START-AUTO-INCLUDES
 use Maplat::Worker::Logging::PAC3200;

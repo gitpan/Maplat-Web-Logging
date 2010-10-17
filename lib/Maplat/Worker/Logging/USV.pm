@@ -4,6 +4,7 @@
 package Maplat::Worker::Logging::USV;
 use strict;
 use warnings;
+use 5.010;
 
 use base qw(Maplat::Worker::BaseModule);
 
@@ -11,7 +12,7 @@ use WWW::Mechanize;
 use HTML::TableExtract;
 use Carp;
 
-our $VERSION = 0.993;
+our $VERSION = 0.994;
 
 sub new {
     my ($proto, %config) = @_;
@@ -134,45 +135,53 @@ sub parseContent {
     while((scalar @rows)) {
         my $line = shift @rows;
         
-        if($line ~~ @ignore) {
-            #print "## $line ##\n";
-            next;
-        } elsif($line =~ /BatteryStatus,(.*)/o) {
-            $values{bat_status} = $1;
-        } elsif($line =~ /SecondsOnBattery,(.*)\ sec/o) {
-            $values{bat_used} = $1;
-        } elsif($line =~ /EstimatedMinuteRemain,(.*)\ min/o) {
-            $values{bat_timeremain} = $1;
-        } elsif($line =~ /EstimatedChargeRemain,(.*)\%/o) {
-            $values{bat_chargeremain} = $1;
-        } elsif($line =~ /BatteryVoltage,(.*)\ Volt/o) {
-            $values{bat_voltage} = $1;
-        } elsif($line =~ /BatteryCurrent,(.*)\ AMP/o) {
-            $values{bat_current} = $1;
-        } elsif($line =~ /BatteryTemperature,(.*)\ Celsius/o) {
-            $values{bat_temp} = $1;
-        } elsif($line eq "Phase,Frequency,Voltage,Current,TruePower") {
-            for(1..3) {
-                my ($key, undef, $voltage) = split /\,/, shift @rows;
-                $key = "in_voltage$key";
-                $voltage =~ s/\ V//go;
-                $values{$key} = $voltage;
+        given($line) {
+            when(@ignore) {
+                next;
             }
-        } elsif($line eq "Phase,Voltage,Current,Power,Load,Power Factor,Peak Current,Share Current") {
-            for(1..3) {
-                my ($key, $voltage, $current, $power, $load) = split /\,/, shift @rows;
-                
-                $voltage =~ s/\ V//go;
-                $values{"out_voltage$key"} = $voltage;
-                $current =~ s/\ A//go;
-                $values{"out_current$key"} = $current;
-                $power =~ s/\ Watt.*//go;
-                $values{"out_power$key"} = $power;
-                $load =~ s/\%//go;
-                $values{"out_load$key"} = $load;
+            when(/BatteryStatus,(.*)/o) {
+                $values{bat_status} = $1;
             }
-        } else {
-            #print "$line\n";
+            when(/SecondsOnBattery,(.*)\ sec/o) {
+                $values{bat_used} = $1;
+            }
+            when(/EstimatedMinuteRemain,(.*)\ min/o) {
+                $values{bat_timeremain} = $1;
+            }
+            when(/EstimatedChargeRemain,(.*)\%/o) {
+                $values{bat_chargeremain} = $1;
+            }
+            when(/BatteryVoltage,(.*)\ Volt/o) {
+                $values{bat_voltage} = $1;
+            }
+            when(/BatteryCurrent,(.*)\ AMP/o) {
+                $values{bat_current} = $1;
+            }
+            when(/BatteryTemperature,(.*)\ Celsius/o) {
+                $values{bat_temp} = $1;
+            }
+            when('Phase,Frequency,Voltage,Current,TruePower') {
+                for(1..3) {
+                    my ($key, undef, $voltage) = split /\,/, shift @rows;
+                    $key = "in_voltage$key";
+                    $voltage =~ s/\ V//go;
+                    $values{$key} = $voltage;
+                }
+            }
+            when('Phase,Voltage,Current,Power,Load,Power Factor,Peak Current,Share Current') {
+                for(1..3) {
+                    my ($key, $voltage, $current, $power, $load) = split /\,/, shift @rows;
+                    
+                    $voltage =~ s/\ V//go;
+                    $values{"out_voltage$key"} = $voltage;
+                    $current =~ s/\ A//go;
+                    $values{"out_current$key"} = $current;
+                    $power =~ s/\ Watt.*//go;
+                    $values{"out_power$key"} = $power;
+                    $load =~ s/\%//go;
+                    $values{"out_load$key"} = $load;
+                }
+            }
         }
     }
     

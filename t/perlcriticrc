@@ -1,4 +1,4 @@
-severity = 4
+severity = 3
 verbose = 4
 
 [TestingAndDebugging::ProhibitNoStrict]
@@ -6,7 +6,6 @@ allow = refs
 
 [TestingAndDebugging::ProhibitProlongedStrictureOverride]
 statements = 5
-
 
 [Perl::Critic::Policy::BuiltinFunctions::ProhibitStringyEval]
 severity = 2
@@ -21,3 +20,17 @@ forbid = create destroy
 max_mccabe = 65
 
 [-Perl::Critic::Policy::Miscellanea::ProhibitUnrestrictedNoCritic]
+
+[NamingConventions::ProhibitAmbiguousNames]
+forbid = abstract bases close contract last left no record right second
+
+[-Variables::ProhibitPackageVars]
+
+[-Perl::Critic::Policy::ValuesAndExpressions::ProhibitImplicitNewlines]
+
+[Subroutines::ProhibitManyArgs]
+max_arguments = 7
+
+[ControlStructures::ProhibitDeepNests]
+max_nests = 8
+
